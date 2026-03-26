@@ -130,7 +130,7 @@ Depoyu klonlayın veya ZIP olarak indirin, klasöre girin ve index.html dosyası
 Windows'ta start index.html, macOS'ta open index.html, Linux'ta xdg-open index.html komutuyla açabilirsiniz.
 
 Yöntem 2: GitHub Pages Üzerinden
-Eğer repoyu GitHub Pages ile yayınladıysanız doğrudan https://KULLANICI_ADI.github.io/lgs-deneme-takip/ adresinden erişebilirsiniz.
+Eğer repoyu GitHub Pages ile yayınladıysanız doğrudan (https://egementoklucu.github.io/LGS/) adresinden erişebilirsiniz.
 
 Yöntem 3: Sadece Dosyayı İndirin
 Bu sayfadaki index.html dosyasına tıklayın, "Raw" butonuna tıklayın, sayfayı Ctrl+S veya Cmd+S ile kaydedin ve kaydedilen dosyayı tarayıcınızda açın.
