@@ -316,4 +316,4 @@ Bu proje işinize yaradıysa yıldız vermeyi unutmayın!
 
 ```bash
 git clone https://egementoklucu.github.io/LGS/.git
-cd lgs-deneme-takip
+cd LGS
