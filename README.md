@@ -315,5 +315,5 @@ Bu araç, öğrencilerin göreceli gelişimlerini takip etmeleri ve güçlü/zay
 Bu proje işinize yaradıysa yıldız vermeyi unutmayın!
 
 ```bash
-git clone https://github.com/KULLANICI_ADI/lgs-deneme-takip.git
+git clone https://egementoklucu.github.io/LGS/.git
 cd lgs-deneme-takip
