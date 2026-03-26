@@ -1,0 +1,1649 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LGS Deneme Takip</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+/* ==================== CSS DEĞİŞKENLERİ ==================== */
+:root {
+  --bg: #f0f2f5; --surface: #ffffff; --surface2: #f8f9fa;
+  --text: #1a1a2e; --text2: #555; --text3: #888;
+  --border: #e0e0e0; --shadow: rgba(0,0,0,0.08);
+  --accent: #4361ee; --accent-light: #4361ee22;
+  --danger: #e63946; --danger-light: #e6394622;
+  --success: #2a9d8f; --success-light: #2a9d8f22;
+  --warn: #e9c46a; --warn-light: #e9c46a22;
+  --radius: 12px; --transition: 0.3s ease;
+}
+[data-theme="dark"] {
+  --bg: #0f0f1a; --surface: #1a1a2e; --surface2: #16213e;
+  --text: #e8e8e8; --text2: #aaa; --text3: #777;
+  --border: #2a2a4a; --shadow: rgba(0,0,0,0.3);
+  --accent-light: #4361ee33;
+  --danger-light: #e6394633;
+  --success-light: #2a9d8f33;
+  --warn-light: #e9c46a33;
+}
+
+/* ==================== GENEL STİLLER ==================== */
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--bg); color: var(--text);
+  transition: background var(--transition), color var(--transition);
+  line-height: 1.6; min-height: 100vh;
+}
+.container { max-width: 1200px; margin: 0 auto; padding: 16px; }
+
+/* ==================== HEADER ==================== */
+.header {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 12px 0; position: sticky; top: 0; z-index: 100;
+  box-shadow: 0 2px 8px var(--shadow);
+  transition: background var(--transition);
+}
+.header .container {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 8px;
+}
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  background: var(--accent); display: flex; align-items: center;
+  justify-content: center; color: #fff; font-weight: 700; font-size: 18px;
+}
+.logo h1 { font-size: 1.2rem; color: var(--text); }
+.logo small { font-size: 0.7rem; color: var(--text3); display: block; }
+.header-actions { display: flex; gap: 8px; align-items: center; }
+
+/* ==================== BUTONLAR ==================== */
+.btn {
+  padding: 8px 16px; border-radius: 8px; border: none;
+  cursor: pointer; font-size: 0.85rem; font-weight: 600;
+  transition: all var(--transition); display: inline-flex;
+  align-items: center; gap: 6px; white-space: nowrap;
+}
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { opacity: 0.85; transform: translateY(-1px); }
+.btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+.btn-secondary:hover { background: var(--border); }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-danger:hover { opacity: 0.85; }
+.btn-sm { padding: 5px 10px; font-size: 0.78rem; }
+.btn-icon {
+  width: 36px; height: 36px; padding: 0; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--surface2); border: 1px solid var(--border);
+  cursor: pointer; color: var(--text); font-size: 1.1rem;
+  transition: all var(--transition);
+}
+.btn-icon:hover { background: var(--accent-light); color: var(--accent); }
+
+/* ==================== KARTLAR ==================== */
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px;
+  box-shadow: 0 2px 8px var(--shadow);
+  transition: background var(--transition), border var(--transition);
+  margin-bottom: 16px;
+}
+.card-title {
+  font-size: 1rem; font-weight: 700; margin-bottom: 16px;
+  display: flex; align-items: center; gap: 8px;
+  color: var(--text); border-bottom: 2px solid var(--accent);
+  padding-bottom: 8px;
+}
+.card-title .icon { font-size: 1.2rem; }
+
+/* ==================== NAV TABLAR ==================== */
+.tabs {
+  display: flex; gap: 4px; margin-bottom: 20px;
+  overflow-x: auto; padding-bottom: 4px;
+  border-bottom: 2px solid var(--border);
+}
+.tab {
+  padding: 10px 18px; border: none; background: none;
+  cursor: pointer; font-size: 0.85rem; font-weight: 600;
+  color: var(--text3); border-bottom: 3px solid transparent;
+  transition: all var(--transition); white-space: nowrap;
+  margin-bottom: -2px;
+}
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.tab-content { display: none; }
+.tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+/* ==================== FORM ALANLARI ==================== */
+.form-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px;
+}
+.form-group { margin-bottom: 12px; }
+.form-group label {
+  display: block; font-size: 0.8rem; font-weight: 600;
+  color: var(--text2); margin-bottom: 4px;
+}
+.form-group input, .form-group select, .form-group textarea {
+  width: 100%; padding: 9px 12px; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--surface2);
+  color: var(--text); font-size: 0.9rem;
+  transition: border var(--transition);
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+  outline: none; border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+.form-group textarea { resize: vertical; min-height: 60px; }
+
+/* ==================== DERS GİRİŞ TABLOSU ==================== */
+.subject-table { width: 100%; border-collapse: collapse; }
+.subject-table th {
+  padding: 8px 6px; font-size: 0.75rem; font-weight: 700;
+  color: var(--text3); text-align: center;
+  border-bottom: 2px solid var(--border);
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.subject-table td {
+  padding: 6px 4px; text-align: center;
+  border-bottom: 1px solid var(--border);
+}
+.subject-table .subject-name {
+  text-align: left; font-weight: 600; font-size: 0.85rem;
+  color: var(--text); white-space: nowrap; padding-left: 8px;
+}
+.subject-table input[type="number"] {
+  width: 60px; padding: 6px 4px; text-align: center;
+  border-radius: 6px; border: 1px solid var(--border);
+  background: var(--surface2); color: var(--text); font-size: 0.85rem;
+}
+.subject-table input[type="number"]:focus {
+  outline: none; border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-light);
+}
+.subject-table .q-count {
+  font-size: 0.75rem; color: var(--text3);
+  font-weight: 600;
+}
+
+/* ==================== SONUÇ KARTLARI ==================== */
+.stats-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px; margin-bottom: 16px;
+}
+.stat-card {
+  background: var(--surface2); border-radius: 10px;
+  padding: 14px; text-align: center;
+  border: 1px solid var(--border);
+  transition: transform var(--transition);
+}
+.stat-card:hover { transform: translateY(-2px); }
+.stat-card .stat-value {
+  font-size: 1.5rem; font-weight: 800; color: var(--accent);
+}
+.stat-card .stat-label {
+  font-size: 0.7rem; color: var(--text3); font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px;
+}
+.stat-card.highlight { border-color: var(--accent); background: var(--accent-light); }
+.stat-card.success .stat-value { color: var(--success); }
+.stat-card.danger .stat-value { color: var(--danger); }
+.stat-card.warn .stat-value { color: #e67e22; }
+
+/* ==================== NET DETAY TABLOSU ==================== */
+.net-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.net-table th {
+  padding: 8px; background: var(--surface2); font-weight: 700;
+  color: var(--text2); text-align: center; font-size: 0.75rem;
+  border-bottom: 2px solid var(--border);
+}
+.net-table td {
+  padding: 7px 8px; text-align: center;
+  border-bottom: 1px solid var(--border);
+}
+.net-table td:first-child { text-align: left; font-weight: 600; }
+.net-bar-bg {
+  width: 100%; height: 6px; background: var(--border);
+  border-radius: 3px; overflow: hidden;
+}
+.net-bar {
+  height: 100%; border-radius: 3px;
+  background: var(--accent); transition: width 0.5s ease;
+}
+
+/* ==================== GEÇMİŞ LİSTESİ ==================== */
+.history-controls {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  align-items: center; margin-bottom: 12px;
+}
+.history-controls input, .history-controls select {
+  padding: 7px 12px; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--surface2);
+  color: var(--text); font-size: 0.85rem;
+}
+.history-list { display: flex; flex-direction: column; gap: 8px; }
+.history-item {
+  display: grid; grid-template-columns: 1fr auto;
+  gap: 12px; align-items: center;
+  padding: 12px 16px; border-radius: 10px;
+  background: var(--surface2); border: 1px solid var(--border);
+  transition: all var(--transition);
+}
+.history-item:hover { border-color: var(--accent); box-shadow: 0 2px 8px var(--shadow); }
+.history-info h4 { font-size: 0.9rem; margin-bottom: 2px; }
+.history-info .meta {
+  font-size: 0.75rem; color: var(--text3);
+  display: flex; gap: 12px; flex-wrap: wrap;
+}
+.history-info .meta span { display: inline-flex; align-items: center; gap: 3px; }
+.history-actions { display: flex; gap: 6px; }
+.badge {
+  display: inline-block; padding: 2px 8px; border-radius: 6px;
+  font-size: 0.7rem; font-weight: 700;
+}
+.badge-accent { background: var(--accent-light); color: var(--accent); }
+.badge-success { background: var(--success-light); color: var(--success); }
+.badge-danger { background: var(--danger-light); color: var(--danger); }
+
+/* ==================== AYARLAR PANELİ ==================== */
+.settings-panel {
+  position: fixed; top: 0; right: -400px; width: 380px;
+  max-width: 90vw; height: 100vh; background: var(--surface);
+  border-left: 1px solid var(--border);
+  box-shadow: -4px 0 20px var(--shadow);
+  z-index: 200; transition: right 0.3s ease;
+  overflow-y: auto; padding: 20px;
+}
+.settings-panel.open { right: 0; }
+.settings-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+  z-index: 199; display: none;
+}
+.settings-overlay.open { display: block; }
+.settings-header {
+  display: flex; justify-content: space-between;
+  align-items: center; margin-bottom: 20px;
+  padding-bottom: 12px; border-bottom: 2px solid var(--border);
+}
+.settings-header h2 { font-size: 1.1rem; }
+.color-picker-grid { display: grid; grid-template-columns: repeat(6,1fr); gap: 8px; }
+.color-swatch {
+  width: 100%; aspect-ratio: 1; border-radius: 8px;
+  cursor: pointer; border: 3px solid transparent;
+  transition: all var(--transition);
+}
+.color-swatch:hover { transform: scale(1.15); }
+.color-swatch.active { border-color: var(--text); box-shadow: 0 0 0 2px var(--bg); }
+.settings-section { margin-bottom: 20px; }
+.settings-section h3 {
+  font-size: 0.85rem; color: var(--text2); margin-bottom: 10px;
+  padding-bottom: 6px; border-bottom: 1px solid var(--border);
+}
+
+/* ==================== GRAFİK ALANI ==================== */
+.chart-container { position: relative; width: 100%; max-height: 350px; }
+.chart-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+}
+
+/* ==================== ANALİZ KARTLARI ==================== */
+.analysis-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+.analysis-card {
+  background: var(--surface2); border-radius: 10px; padding: 14px;
+  border-left: 4px solid var(--accent);
+}
+.analysis-card h4 { font-size: 0.85rem; margin-bottom: 6px; }
+.analysis-card p { font-size: 0.8rem; color: var(--text2); }
+
+/* ==================== HEDEF PUAN ==================== */
+.target-box {
+  background: var(--accent-light); border: 2px dashed var(--accent);
+  border-radius: var(--radius); padding: 16px; text-align: center;
+  margin-bottom: 16px;
+}
+.target-box .target-val { font-size: 2rem; font-weight: 800; color: var(--accent); }
+.target-box .target-lbl { font-size: 0.8rem; color: var(--text2); }
+.target-box .target-desc { font-size: 0.72rem; color: var(--text3); margin-top: 6px; }
+
+/* ==================== UYARI/BİLGİ KUTULARI ==================== */
+.alert {
+  padding: 10px 14px; border-radius: 8px;
+  font-size: 0.82rem; margin-bottom: 12px;
+  display: flex; align-items: flex-start; gap: 8px;
+}
+.alert-info { background: var(--accent-light); color: var(--accent); border: 1px solid var(--accent); }
+.alert-warn { background: var(--warn-light); color: #b8860b; border: 1px solid var(--warn); }
+.alert-danger { background: var(--danger-light); color: var(--danger); border: 1px solid var(--danger); }
+.alert-success { background: var(--success-light); color: var(--success); border: 1px solid var(--success); }
+
+/* ==================== MODAL ==================== */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+  z-index: 300; display: none; align-items: center;
+  justify-content: center; padding: 16px;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--surface); border-radius: var(--radius);
+  padding: 24px; max-width: 500px; width: 100%;
+  max-height: 80vh; overflow-y: auto;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+}
+.modal h3 { margin-bottom: 16px; }
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 768px) {
+  .chart-row { grid-template-columns: 1fr; }
+  .stats-grid { grid-template-columns: repeat(3, 1fr); }
+  .form-grid { grid-template-columns: 1fr; }
+  .subject-table input[type="number"] { width: 48px; }
+  .history-item { grid-template-columns: 1fr; }
+  .history-actions { justify-content: flex-end; }
+  .tabs { gap: 0; }
+  .tab { padding: 8px 12px; font-size: 0.78rem; }
+  .analysis-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .container { padding: 10px; }
+  .card { padding: 14px; }
+}
+
+/* ==================== SCROLL & GENEL ==================== */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+.overflow-x { overflow-x: auto; }
+.text-center { text-align: center; }
+.mt-8 { margin-top: 8px; }
+.mt-16 { margin-top: 16px; }
+.mb-8 { margin-bottom: 8px; }
+.mb-16 { margin-bottom: 16px; }
+.hidden { display: none !important; }
+.flex-between { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; }
+.empty-state {
+  text-align: center; padding: 40px 20px; color: var(--text3);
+}
+.empty-state .empty-icon { font-size: 3rem; margin-bottom: 12px; }
+.empty-state p { font-size: 0.9rem; }
+
+.trend-up { color: var(--success); }
+.trend-down { color: var(--danger); }
+.trend-neutral { color: var(--text3); }
+</style>
+</head>
+<body>
+
+<!-- ==================== HEADER ==================== -->
+<header class="header">
+  <div class="container">
+    <div class="logo">
+      <div class="logo-icon">LGS</div>
+      <div>
+        <h1>Deneme Takip</h1>
+        <small>Puan Hesaplama & Gelişim Analizi</small>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn-icon" onclick="toggleTheme()" title="Tema Değiştir" id="themeBtn">🌙</button>
+      <button class="btn-icon" onclick="openSettings()" title="Ayarlar">⚙️</button>
+    </div>
+  </div>
+</header>
+
+<!-- ==================== AYARLAR PANELİ ==================== -->
+<div class="settings-overlay" id="settingsOverlay" onclick="closeSettings()"></div>
+<div class="settings-panel" id="settingsPanel">
+  <div class="settings-header">
+    <h2>⚙️ Ayarlar</h2>
+    <button class="btn-icon" onclick="closeSettings()">✕</button>
+  </div>
+
+  <div class="settings-section">
+    <h3>🎨 Vurgu Rengi</h3>
+    <div class="color-picker-grid" id="colorPicker"></div>
+  </div>
+
+  <div class="settings-section">
+    <h3>📝 Ders Soru Sayıları</h3>
+    <div id="questionSettings"></div>
+  </div>
+
+  <div class="settings-section">
+    <h3>📊 Grafik Ayarları</h3>
+    <div class="form-group">
+      <label>Grafik Türü</label>
+      <select id="chartTypeSel" onchange="saveSettings(); renderCharts();">
+        <option value="line">Çizgi Grafik</option>
+        <option value="bar">Çubuk Grafik</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="settings-section">
+    <h3>💾 Veri Yönetimi</h3>
+    <button class="btn btn-secondary mb-8" onclick="exportData()" style="width:100%">📥 Verileri Dışa Aktar (JSON)</button>
+    <button class="btn btn-secondary mb-8" onclick="document.getElementById('importFile').click()" style="width:100%">📤 Verileri İçe Aktar</button>
+    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+    <button class="btn btn-danger" onclick="confirmClearAll()" style="width:100%">🗑️ Tüm Verileri Sil</button>
+  </div>
+</div>
+
+<!-- ==================== ANA İÇERİK ==================== -->
+<main class="container">
+  <!-- NAV TABLAR -->
+  <div class="tabs" id="mainTabs">
+    <button class="tab active" onclick="switchTab('tabEntry')">📝 Deneme Gir</button>
+    <button class="tab" onclick="switchTab('tabResult')">📊 Sonuç</button>
+    <button class="tab" onclick="switchTab('tabHistory')">📋 Geçmiş</button>
+    <button class="tab" onclick="switchTab('tabCharts')">📈 Gelişim</button>
+    <button class="tab" onclick="switchTab('tabAnalysis')">🔍 Analiz</button>
+  </div>
+
+  <!-- ====== TAB: DENEME GİRİŞ ====== -->
+  <div class="tab-content active" id="tabEntry">
+    <div class="card">
+      <div class="card-title"><span class="icon">📝</span> Yeni Deneme Girişi</div>
+
+      <div id="entryAlert"></div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Deneme Adı</label>
+          <input type="text" id="examName" placeholder="ör: Deneme 1, MEB Denemesi...">
+        </div>
+        <div class="form-group">
+          <label>Deneme Tarihi</label>
+          <input type="date" id="examDate">
+        </div>
+      </div>
+
+      <div class="overflow-x mt-8">
+        <table class="subject-table" id="subjectTable">
+          <thead>
+            <tr>
+              <th style="text-align:left;padding-left:8px">Ders</th>
+              <th>Soru</th>
+              <th>✅ Doğru</th>
+              <th>❌ Yanlış</th>
+              <th>⬜ Boş</th>
+            </tr>
+          </thead>
+          <tbody id="subjectTableBody"></tbody>
+        </table>
+      </div>
+
+      <div class="form-group mt-16">
+        <label>Not (Opsiyonel)</label>
+        <textarea id="examNote" placeholder="Bu deneme hakkında notlarınız..."></textarea>
+      </div>
+
+      <div class="flex-between mt-16">
+        <button class="btn btn-secondary" onclick="clearForm()">🔄 Temizle</button>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-secondary" id="cancelEditBtn" class="hidden" onclick="cancelEdit()" style="display:none">İptal</button>
+          <button class="btn btn-primary" id="saveBtn" onclick="saveExam()">💾 Kaydet ve Hesapla</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== TAB: SONUÇ ====== -->
+  <div class="tab-content" id="tabResult">
+    <div id="resultContent">
+      <div class="empty-state">
+        <div class="empty-icon">📊</div>
+        <p>Henüz bir deneme hesaplamadınız.<br>Deneme girerek sonuçlarınızı görün.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== TAB: GEÇMİŞ ====== -->
+  <div class="tab-content" id="tabHistory">
+    <div class="card">
+      <div class="card-title"><span class="icon">📋</span> Deneme Geçmişi</div>
+
+      <div class="history-controls">
+        <input type="text" id="searchInput" placeholder="🔍 Ara..." oninput="renderHistory()">
+        <select id="sortSelect" onchange="renderHistory()">
+          <option value="newest">En Yeni</option>
+          <option value="oldest">En Eski</option>
+          <option value="highest">En Yüksek Puan</option>
+          <option value="lowest">En Düşük Puan</option>
+          <option value="netHigh">En Yüksek Net</option>
+          <option value="netLow">En Düşük Net</option>
+        </select>
+        <span id="historyCount" style="font-size:0.8rem;color:var(--text3);margin-left:auto"></span>
+      </div>
+
+      <div class="history-list" id="historyList"></div>
+    </div>
+  </div>
+
+  <!-- ====== TAB: GELİŞİM ====== -->
+  <div class="tab-content" id="tabCharts">
+    <div id="smartTarget"></div>
+
+    <div class="chart-row">
+      <div class="card">
+        <div class="card-title"><span class="icon">📈</span> Puan Gelişimi</div>
+        <div class="chart-container"><canvas id="chartScore"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="icon">📊</span> Net Gelişimi</div>
+        <div class="chart-container"><canvas id="chartNet"></canvas></div>
+      </div>
+    </div>
+
+    <div class="card mt-16">
+      <div class="card-title"><span class="icon">📚</span> Ders Bazlı Net Trendi</div>
+      <div class="chart-container" style="max-height:400px"><canvas id="chartSubjects"></canvas></div>
+    </div>
+  </div>
+
+  <!-- ====== TAB: ANALİZ ====== -->
+  <div class="tab-content" id="tabAnalysis">
+    <div id="analysisContent">
+      <div class="empty-state">
+        <div class="empty-icon">🔍</div>
+        <p>Analiz için en az 1 deneme kaydedin.</p>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- ==================== SİLME ONAYI MODALI ==================== -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal">
+    <h3>🗑️ Denemeyi Sil</h3>
+    <p style="margin-bottom:16px;color:var(--text2)">Bu denemeyi silmek istediğinize emin misiniz? Bu işlem geri alınamaz.</p>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn btn-secondary" onclick="closeDeleteModal()">İptal</button>
+      <button class="btn btn-danger" id="confirmDeleteBtn">Sil</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===========================================================================
+   LGS DENEME TAKİP UYGULAMASI - ANA JAVASCRIPT MODÜLÜ
+   ===========================================================================
+   DÜZELTME NOTU (Puan Ölçekleme):
+   Orijinal kodda puan hesaplama, sabit LGS soru yapısına (20-20-20-10-10-10)
+   göre kalibre edilmiş katsayılar kullanıyordu. Kullanıcı soru sayılarını
+   değiştirdiğinde, ham net doğal olarak düşüyor ve katsayılar bunu
+   telafi edemiyordu. Sonuç: 10 sorudan 10 doğru yapan öğrenci,
+   20 sorudan 20 doğru yapan öğrencinin yarısı kadar puan alıyordu.
+
+   ÇÖZÜM: Her dersin netini, mevcut soru sayısına göre normalize edip
+   varsayılan (orijinal) soru sayısına ölçekliyoruz.
+   Böylece katsayılar doğru çalışmaya devam eder ve
+   soru sayısı ne olursa olsun full doğru = full puan mantığı korunur.
+   =========================================================================== */
+
+// ==================== SABİTLER & VARSAYILANLAR ====================
+
+const DEFAULT_SUBJECTS = [
+  { id: 'turkce',   name: 'Türkçe',                              defaultQ: 20, weight: 4 },
+  { id: 'mat',      name: 'Matematik',                           defaultQ: 20, weight: 4 },
+  { id: 'fen',      name: 'Fen Bilimleri',                       defaultQ: 20, weight: 4 },
+  { id: 'inkilap',  name: 'T.C. İnkılap Tarihi ve Atatürkçülük', defaultQ: 10, weight: 1 },
+  { id: 'din',      name: 'Din Kültürü ve Ahlak Bilgisi',        defaultQ: 10, weight: 1 },
+  { id: 'ing',      name: 'İngilizce',                           defaultQ: 10, weight: 1 }
+];
+
+const SCORE_COEFFICIENTS = {
+  turkce:  4.348,
+  mat:     4.2538,
+  fen:     4.1230,
+  inkilap: 1.666,
+  din:     1.899,
+  ing:     1.5075
+};
+const BASE_SCORE = 194.752082;
+const MIN_SCORE = 100;
+const MAX_SCORE = 500;
+const MAX_EXAMS = 100;
+
+const ACCENT_COLORS = [
+  '#4361ee', '#3a86ff', '#8338ec', '#ff006e', '#e63946', '#f77f00',
+  '#2a9d8f', '#06d6a0', '#118ab2', '#073b4c', '#6c757d', '#e67e22'
+];
+
+// ==================== GLOBAL DURUM DEĞİŞKENLERİ ====================
+let exams = [];
+let settings = {};
+let editingId = null;
+let lastResult = null;
+let chartInstances = {};
+
+// ==================== SAYFA YÜKLENME ====================
+document.addEventListener('DOMContentLoaded', () => {
+  loadData();
+  loadSettings();
+  applyTheme();
+  applyAccentColor();
+  buildSubjectTable();
+  buildSettingsPanel();
+  setDefaultDate();
+  renderHistory();
+  renderCharts();
+  renderAnalysis();
+});
+
+// ==================== VERİ YÜKLEME / KAYDETME ====================
+
+function loadData() {
+  try {
+    const raw = localStorage.getItem('lgs_exams');
+    exams = raw ? JSON.parse(raw) : [];
+  } catch(e) {
+    exams = [];
+  }
+}
+
+function saveData() {
+  localStorage.setItem('lgs_exams', JSON.stringify(exams));
+}
+
+function loadSettings() {
+  try {
+    const raw = localStorage.getItem('lgs_settings');
+    settings = raw ? JSON.parse(raw) : {};
+  } catch(e) {
+    settings = {};
+  }
+  if (!settings.theme) settings.theme = 'light';
+  if (!settings.accent) settings.accent = ACCENT_COLORS[0];
+  if (!settings.chartType) settings.chartType = 'line';
+  if (!settings.questionCounts) {
+    settings.questionCounts = {};
+    DEFAULT_SUBJECTS.forEach(s => { settings.questionCounts[s.id] = s.defaultQ; });
+  }
+}
+
+function saveSettings() {
+  DEFAULT_SUBJECTS.forEach(s => {
+    const el = document.getElementById('qSet_' + s.id);
+    if (el) {
+      const val = parseInt(el.value);
+      if (val > 0 && val <= 50) settings.questionCounts[s.id] = val;
+    }
+  });
+  const ct = document.getElementById('chartTypeSel');
+  if (ct) settings.chartType = ct.value;
+
+  localStorage.setItem('lgs_settings', JSON.stringify(settings));
+  buildSubjectTable();
+}
+
+// ==================== TEMA YÖNETİMİ ====================
+
+function toggleTheme() {
+  settings.theme = settings.theme === 'dark' ? 'light' : 'dark';
+  applyTheme();
+  localStorage.setItem('lgs_settings', JSON.stringify(settings));
+  renderCharts();
+}
+
+function applyTheme() {
+  document.documentElement.setAttribute('data-theme', settings.theme);
+  const btn = document.getElementById('themeBtn');
+  btn.textContent = settings.theme === 'dark' ? '☀️' : '🌙';
+}
+
+function applyAccentColor() {
+  document.documentElement.style.setProperty('--accent', settings.accent);
+  document.documentElement.style.setProperty('--accent-light', settings.accent + '22');
+  document.querySelectorAll('.color-swatch').forEach(el => {
+    el.classList.toggle('active', el.dataset.color === settings.accent);
+  });
+}
+
+function selectAccentColor(color) {
+  settings.accent = color;
+  applyAccentColor();
+  localStorage.setItem('lgs_settings', JSON.stringify(settings));
+  renderCharts();
+}
+
+// ==================== AYARLAR PANELİ ====================
+
+function openSettings() {
+  document.getElementById('settingsPanel').classList.add('open');
+  document.getElementById('settingsOverlay').classList.add('open');
+}
+
+function closeSettings() {
+  document.getElementById('settingsPanel').classList.remove('open');
+  document.getElementById('settingsOverlay').classList.remove('open');
+}
+
+function buildSettingsPanel() {
+  const picker = document.getElementById('colorPicker');
+  picker.innerHTML = ACCENT_COLORS.map(c =>
+    `<div class="color-swatch ${settings.accent === c ? 'active' : ''}"
+          style="background:${c}" data-color="${c}"
+          onclick="selectAccentColor('${c}')"></div>`
+  ).join('');
+
+  const qDiv = document.getElementById('questionSettings');
+  qDiv.innerHTML = DEFAULT_SUBJECTS.map(s => `
+    <div class="form-group">
+      <label>${s.name}</label>
+      <input type="number" id="qSet_${s.id}" min="1" max="50"
+             value="${settings.questionCounts[s.id]}" onchange="saveSettings()">
+    </div>
+  `).join('');
+
+  const ct = document.getElementById('chartTypeSel');
+  if (ct) ct.value = settings.chartType;
+}
+
+// ==================== DERS GİRİŞ TABLOSU ====================
+
+function buildSubjectTable() {
+  const tbody = document.getElementById('subjectTableBody');
+  tbody.innerHTML = DEFAULT_SUBJECTS.map(s => {
+    const qCount = settings.questionCounts[s.id] || s.defaultQ;
+    return `
+      <tr data-subject="${s.id}">
+        <td class="subject-name">${s.name} <span class="q-count">(${qCount})</span></td>
+        <td><span class="q-count">${qCount}</span></td>
+        <td><input type="number" id="d_${s.id}" min="0" max="${qCount}" value="0"
+                   oninput="onSubjectInput('${s.id}')"></td>
+        <td><input type="number" id="y_${s.id}" min="0" max="${qCount}" value="0"
+                   oninput="onSubjectInput('${s.id}')"></td>
+        <td><input type="number" id="b_${s.id}" min="0" max="${qCount}" value="0"
+                   oninput="onSubjectInput('${s.id}')"></td>
+      </tr>`;
+  }).join('');
+}
+
+function onSubjectInput(subId) {
+  const qCount = settings.questionCounts[subId] || DEFAULT_SUBJECTS.find(s=>s.id===subId).defaultQ;
+  const d = parseInt(document.getElementById('d_' + subId).value) || 0;
+  const y = parseInt(document.getElementById('y_' + subId).value) || 0;
+  const bInput = document.getElementById('b_' + subId);
+  const remaining = qCount - d - y;
+  if (remaining >= 0) {
+    bInput.value = remaining;
+  }
+}
+
+// ==================== VERİ DOĞRULAMA ====================
+
+function validateForm() {
+  const name = document.getElementById('examName').value.trim();
+  const date = document.getElementById('examDate').value;
+  const note = document.getElementById('examNote').value.trim();
+  const errors = [];
+
+  if (!name) errors.push('Deneme adı boş bırakılamaz.');
+  if (!date) errors.push('Tarih seçilmelidir.');
+
+  const subjects = {};
+  DEFAULT_SUBJECTS.forEach(s => {
+    const qCount = settings.questionCounts[s.id] || s.defaultQ;
+    const d = parseInt(document.getElementById('d_' + s.id).value);
+    const y = parseInt(document.getElementById('y_' + s.id).value);
+    const b = parseInt(document.getElementById('b_' + s.id).value);
+
+    if (d < 0 || y < 0 || b < 0) {
+      errors.push(`${s.name}: Negatif sayı girilemez.`);
+      return;
+    }
+    if (isNaN(d) || isNaN(y) || isNaN(b)) {
+      errors.push(`${s.name}: Geçerli sayı giriniz.`);
+      return;
+    }
+    const total = d + y + b;
+    if (total > qCount) {
+      errors.push(`${s.name}: Toplam (${total}) soru sayısını (${qCount}) aşıyor.`);
+    } else if (total < qCount) {
+      const autoBlank = qCount - d - y;
+      document.getElementById('b_' + s.id).value = autoBlank;
+      subjects[s.id] = { d, y, b: autoBlank };
+      return;
+    }
+    subjects[s.id] = { d, y, b };
+  });
+
+  if (errors.length > 0) {
+    showAlert('entryAlert', errors.join('<br>'), 'danger');
+    return null;
+  }
+
+  return { name, date, note, subjects };
+}
+
+// ==================== PUAN HESAPLAMA (DÜZELTİLMİŞ) ====================
+
+/**
+ * LGS tahmini puan hesaplama — NORMALİZE EDİLMİŞ SÜRÜM
+ *
+ * ÖNCEKİ HATA:
+ * Katsayılar sabit soru yapısına (20-20-20-10-10-10) göre kalibre edilmişti.
+ * Kullanıcı soru sayısını azalttığında (ör: 10 soru), full doğruda bile
+ * maksimum net yarıya düşüyor ve puan orantısız olarak çok düşük çıkıyordu.
+ *
+ * ÇÖZÜM — Ölçeklenmiş Net Yaklaşımı:
+ * Her ders için:
+ * 1. Ham net hesapla: net = doğru - (yanlış / 3)
+ * 2. Negatif netler 0'a sabitlenir
+ * 3. Neti mevcut soru sayısına göre normalize et: oran = net / mevcutSoruSayısı
+ * 4. Oranı varsayılan soru sayısına ölçekle: ölçekliNet = oran × varsayılanSoruSayısı
+ * 5. Bu ölçeklenmiş neti sabit katsayıyla çarparak puana dönüştür
+ *
+ * Böylece soru sayısı ne olursa olsun, %100 başarı = %100 puan mantığı korunur.
+ * 10 sorudan 10 doğru = 20 sorudan 20 doğru (aynı puan)
+ *
+ * KENAR DURUMLAR:
+ * - Soru sayısı 0 olan dersler hesaplamadan çıkarılır (sıfıra bölme engeli)
+ * - Oran 0-1 arasında sınırlanır
+ * - Negatif net 0'a sabitlenir
+ * - Final puan 100-500 arasında kesilir
+ */
+function calculateScore(subjects) {
+  const result = {
+    nets: {},
+    totalCorrect: 0,
+    totalWrong: 0,
+    totalBlank: 0,
+    totalNet: 0
+  };
+
+  // ── Adım 1: Her ders için ham net ve normalize bilgilerini hesapla ──
+  DEFAULT_SUBJECTS.forEach(s => {
+    const data = subjects[s.id];
+    const qCount = settings.questionCounts[s.id] || s.defaultQ;
+
+    // Ham net: Doğru - (Yanlış / 3)
+    const rawNet = parseFloat((data.d - (data.y / 3)).toFixed(2));
+    // Negatif net olamaz
+    const net = Math.max(0, rawNet);
+    // Başarı yüzdesi (mevcut soru sayısına göre)
+    const percentage = qCount > 0 ? ((net / qCount) * 100).toFixed(1) : '0.0';
+
+    result.nets[s.id] = {
+      correct: data.d,
+      wrong: data.y,
+      blank: data.b,
+      net: net,
+      maxQ: qCount,
+      percentage: percentage
+    };
+
+    result.totalCorrect += data.d;
+    result.totalWrong += data.y;
+    result.totalBlank += data.b;
+    result.totalNet += net;
+  });
+
+  result.totalNet = parseFloat(result.totalNet.toFixed(2));
+
+  // ── Adım 2: Ağırlıklı puan hesaplama (NORMALİZE EDİLMİŞ) ──
+  let weightedSum = 0;
+
+  DEFAULT_SUBJECTS.forEach(s => {
+    const netData = result.nets[s.id];
+    const currentQ = netData.maxQ;          // Kullanıcının ayarladığı soru sayısı
+    const defaultQ = s.defaultQ;            // Varsayılan (orijinal) soru sayısı
+
+    /*
+     * ÖLÇEKLEME FORMÜLÜ:
+     *
+     * Eğer mevcut soru sayısı 0 ise, bu ders katkı sağlamaz.
+     * Aksi halde:
+     *   oran = net / mevcutSoruSayısı       → 0 ile 1 arası başarı oranı
+     *   ölçekliNet = oran × varsayılanSoru   → sanki orijinal soru sayısıyla çözülmüş gibi
+     *
+     * Örnek:
+     *   Türkçe: 10 soru, 10 doğru → net=10, oran=10/10=1.0
+     *   ölçekliNet = 1.0 × 20 = 20 → Katsayıyla: 20 × 4.348 = 86.96
+     *   (Orijinal 20 sorudan 20 doğru yapılmışçasına aynı puan)
+     */
+    if (currentQ > 0) {
+      // Başarı oranı: net / mevcut soru sayısı (0-1 arası sınırla)
+      const ratio = Math.min(1, netData.net / currentQ);
+      // Ölçeklenmiş net: oranı varsayılan soru sayısıyla çarp
+      const scaledNet = ratio * defaultQ;
+      // Katsayıyla çarp
+      weightedSum += scaledNet * SCORE_COEFFICIENTS[s.id];
+    }
+    // currentQ === 0 ise bu ders hiç katkı yapmaz (sıfıra bölme engeli)
+  });
+
+  // ── Adım 3: Final puan hesaplama ──
+  let score = BASE_SCORE + weightedSum;
+  // 100-500 aralığına sabitle
+  score = Math.max(MIN_SCORE, Math.min(MAX_SCORE, score));
+  result.score = parseFloat(score.toFixed(2));
+
+  return result;
+}
+
+// ==================== DENEME KAYDETME ====================
+
+function saveExam() {
+  const formData = validateForm();
+  if (!formData) return;
+
+  if (!editingId && exams.length >= MAX_EXAMS) {
+    showAlert('entryAlert',
+      `Maksimum ${MAX_EXAMS} deneme kaydedilebilir. Yeni kayıt için eski bir denemeyi silin.`, 'warn');
+    return;
+  }
+
+  const result = calculateScore(formData.subjects);
+
+  if (editingId) {
+    const idx = exams.findIndex(e => e.id === editingId);
+    if (idx !== -1) {
+      const originalCreated = exams[idx].createdAt;
+      exams[idx] = {
+        ...exams[idx],
+        name: formData.name,
+        date: formData.date,
+        note: formData.note,
+        subjects: formData.subjects,
+        result: result,
+        createdAt: originalCreated,
+        updatedAt: new Date().toISOString()
+      };
+    }
+    editingId = null;
+    document.getElementById('cancelEditBtn').style.display = 'none';
+    document.getElementById('saveBtn').textContent = '💾 Kaydet ve Hesapla';
+    showAlert('entryAlert', 'Deneme başarıyla güncellendi!', 'success');
+  } else {
+    const exam = {
+      id: generateId(),
+      name: formData.name,
+      date: formData.date,
+      note: formData.note,
+      subjects: formData.subjects,
+      result: result,
+      createdAt: new Date().toISOString(),
+      updatedAt: null
+    };
+    exams.push(exam);
+    showAlert('entryAlert', 'Deneme başarıyla kaydedildi!', 'success');
+  }
+
+  saveData();
+  lastResult = result;
+  lastResult.examName = formData.name;
+  lastResult.examDate = formData.date;
+
+  renderResult(result);
+  renderHistory();
+  renderCharts();
+  renderAnalysis();
+  switchTab('tabResult');
+  clearForm();
+}
+
+function generateId() {
+  return 'exam_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+}
+
+// ==================== DENEME DÜZENLEME ====================
+
+function editExam(id) {
+  const exam = exams.find(e => e.id === id);
+  if (!exam) return;
+
+  editingId = id;
+
+  document.getElementById('examName').value = exam.name;
+  document.getElementById('examDate').value = exam.date;
+  document.getElementById('examNote').value = exam.note || '';
+
+  DEFAULT_SUBJECTS.forEach(s => {
+    const data = exam.subjects[s.id];
+    if (data) {
+      document.getElementById('d_' + s.id).value = data.d;
+      document.getElementById('y_' + s.id).value = data.y;
+      document.getElementById('b_' + s.id).value = data.b;
+    }
+  });
+
+  document.getElementById('cancelEditBtn').style.display = 'inline-flex';
+  document.getElementById('saveBtn').textContent = '💾 Güncelle';
+  switchTab('tabEntry');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  showAlert('entryAlert', `"${exam.name}" düzenleniyor. Oluşturulma tarihi korunacaktır.`, 'info');
+}
+
+function cancelEdit() {
+  editingId = null;
+  document.getElementById('cancelEditBtn').style.display = 'none';
+  document.getElementById('saveBtn').textContent = '💾 Kaydet ve Hesapla';
+  clearForm();
+  showAlert('entryAlert', '', 'info');
+  document.getElementById('entryAlert').innerHTML = '';
+}
+
+// ==================== DENEME SİLME ====================
+
+let deleteTargetId = null;
+
+function deleteExam(id) {
+  deleteTargetId = id;
+  document.getElementById('deleteModal').classList.add('open');
+  document.getElementById('confirmDeleteBtn').onclick = () => {
+    exams = exams.filter(e => e.id !== deleteTargetId);
+    saveData();
+    closeDeleteModal();
+    renderHistory();
+    renderCharts();
+    renderAnalysis();
+  };
+}
+
+function closeDeleteModal() {
+  document.getElementById('deleteModal').classList.remove('open');
+  deleteTargetId = null;
+}
+
+// ==================== SONUÇ EKRANI ====================
+
+function renderResult(result) {
+  const container = document.getElementById('resultContent');
+
+  const sortedByDate = [...exams].sort((a,b) => new Date(b.date) - new Date(a.date));
+  const prevExam = sortedByDate.length > 1 ? sortedByDate[1] : null;
+  const bestExam = exams.length > 0 ? exams.reduce((a,b) => a.result.score > b.result.score ? a : b) : null;
+
+  const prevDiff = prevExam ? (result.score - prevExam.result.score).toFixed(2) : null;
+  const bestDiff = bestExam ? (result.score - bestExam.result.score).toFixed(2) : null;
+
+  let trend = 'neutral';
+  if (sortedByDate.length >= 3) {
+    const recent3 = sortedByDate.slice(0, 3).map(e => e.result.score);
+    if (recent3[0] > recent3[1] && recent3[1] > recent3[2]) trend = 'up';
+    else if (recent3[0] < recent3[1] && recent3[1] < recent3[2]) trend = 'down';
+  }
+  const trendText = { up: '📈 Yükseliş trendi', down: '📉 Düşüş trendi', neutral: '➡️ Dalgalı seyir' };
+  const trendClass = { up: 'trend-up', down: 'trend-down', neutral: 'trend-neutral' };
+
+  // Soru sayısı değiştirilmiş mi kontrol et
+  let isCustomQuestions = false;
+  DEFAULT_SUBJECTS.forEach(s => {
+    if ((settings.questionCounts[s.id] || s.defaultQ) !== s.defaultQ) {
+      isCustomQuestions = true;
+    }
+  });
+
+  let html = `
+    <div class="alert alert-info mb-16">
+      ℹ️ Bu puan <strong>tahmini</strong> olup, yaygın kullanılan yaklaşık katsayılara dayalıdır.
+      Kesin sonuçlar yalnızca MEB tarafından açıklanır.
+      ${isCustomQuestions ? '<br>⚠️ <strong>Özel soru sayıları</strong> kullanıldığı için puan, başarı oranınıza göre normalize edilerek hesaplanmıştır.' : ''}
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card highlight">
+        <div class="stat-value">${result.score.toFixed(1)}</div>
+        <div class="stat-label">Tahmini LGS Puanı</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">${result.totalNet}</div>
+        <div class="stat-label">Toplam Net</div>
+      </div>
+      <div class="stat-card success">
+        <div class="stat-value">${result.totalCorrect}</div>
+        <div class="stat-label">Toplam Doğru</div>
+      </div>
+      <div class="stat-card danger">
+        <div class="stat-value">${result.totalWrong}</div>
+        <div class="stat-label">Toplam Yanlış</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">${result.totalBlank}</div>
+        <div class="stat-label">Toplam Boş</div>
+      </div>
+      <div class="stat-card ${trend === 'up' ? 'success' : trend === 'down' ? 'danger' : ''}">
+        <div class="stat-value" style="font-size:1.1rem">${trendText[trend]}</div>
+        <div class="stat-label">Trend</div>
+      </div>
+    </div>`;
+
+  if (prevDiff !== null || bestDiff !== null) {
+    html += `<div class="stats-grid">`;
+    if (prevDiff !== null) {
+      const cls = prevDiff >= 0 ? 'success' : 'danger';
+      const sign = prevDiff >= 0 ? '+' : '';
+      html += `
+        <div class="stat-card ${cls}">
+          <div class="stat-value">${sign}${prevDiff}</div>
+          <div class="stat-label">Önceki Denemeye Göre</div>
+        </div>`;
+    }
+    if (bestDiff !== null) {
+      const cls2 = bestDiff >= 0 ? 'success' : 'danger';
+      const sign2 = bestDiff >= 0 ? '+' : '';
+      html += `
+        <div class="stat-card ${cls2}">
+          <div class="stat-value">${sign2}${bestDiff}</div>
+          <div class="stat-label">En İyi Denemeye Göre</div>
+        </div>`;
+    }
+    html += `</div>`;
+  }
+
+  html += `
+    <div class="card mt-16">
+      <div class="card-title"><span class="icon">📚</span> Ders Bazlı Netler</div>
+      <div class="overflow-x">
+        <table class="net-table">
+          <thead>
+            <tr>
+              <th style="text-align:left">Ders</th>
+              <th>Doğru</th>
+              <th>Yanlış</th>
+              <th>Boş</th>
+              <th>Net</th>
+              <th>%</th>
+              <th style="min-width:80px">Grafik</th>
+            </tr>
+          </thead>
+          <tbody>`;
+
+  DEFAULT_SUBJECTS.forEach(s => {
+    const n = result.nets[s.id];
+    html += `
+      <tr>
+        <td style="text-align:left;font-weight:600">${s.name}</td>
+        <td style="color:var(--success)">${n.correct}</td>
+        <td style="color:var(--danger)">${n.wrong}</td>
+        <td>${n.blank}</td>
+        <td><strong>${n.net}</strong></td>
+        <td>%${n.percentage}</td>
+        <td>
+          <div class="net-bar-bg">
+            <div class="net-bar" style="width:${n.percentage}%;background:${parseFloat(n.percentage)>=70?'var(--success)':parseFloat(n.percentage)>=40?'var(--accent)':'var(--danger)'}"></div>
+          </div>
+        </td>
+      </tr>`;
+  });
+
+  html += `</tbody></table></div></div>`;
+
+  container.innerHTML = html;
+}
+
+// ==================== GEÇMİŞ LİSTESİ ====================
+
+function renderHistory() {
+  const list = document.getElementById('historyList');
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  const sort = document.getElementById('sortSelect').value;
+
+  let filtered = exams.filter(e =>
+    e.name.toLowerCase().includes(search) ||
+    e.date.includes(search) ||
+    (e.note && e.note.toLowerCase().includes(search))
+  );
+
+  switch(sort) {
+    case 'newest': filtered.sort((a,b) => new Date(b.date) - new Date(a.date)); break;
+    case 'oldest': filtered.sort((a,b) => new Date(a.date) - new Date(b.date)); break;
+    case 'highest': filtered.sort((a,b) => b.result.score - a.result.score); break;
+    case 'lowest': filtered.sort((a,b) => a.result.score - b.result.score); break;
+    case 'netHigh': filtered.sort((a,b) => b.result.totalNet - a.result.totalNet); break;
+    case 'netLow': filtered.sort((a,b) => a.result.totalNet - b.result.totalNet); break;
+  }
+
+  document.getElementById('historyCount').textContent = `${exams.length}/${MAX_EXAMS} kayıt`;
+
+  if (filtered.length === 0) {
+    list.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">📋</div>
+      <p>${exams.length === 0 ? 'Henüz deneme kaydedilmemiş.' : 'Aramanızla eşleşen sonuç bulunamadı.'}</p>
+    </div>`;
+    return;
+  }
+
+  list.innerHTML = filtered.map((e, idx) => {
+    const isHighest = e.result.score === Math.max(...exams.map(x=>x.result.score));
+    const badge = isHighest && exams.length > 1 ? '<span class="badge badge-success">🏆 En İyi</span>' : '';
+
+    return `
+      <div class="history-item">
+        <div class="history-info">
+          <h4>${e.name} ${badge}</h4>
+          <div class="meta">
+            <span>📅 ${formatDate(e.date)}</span>
+            <span class="badge badge-accent">${e.result.score.toFixed(1)} puan</span>
+            <span>${e.result.totalNet} net</span>
+            <span>✅${e.result.totalCorrect} ❌${e.result.totalWrong} ⬜${e.result.totalBlank}</span>
+            ${e.updatedAt ? '<span style="color:var(--warn)">✏️ Düzenlenmiş</span>' : ''}
+          </div>
+          ${e.note ? `<p style="font-size:0.75rem;color:var(--text3);margin-top:4px">📝 ${e.note}</p>` : ''}
+        </div>
+        <div class="history-actions">
+          <button class="btn btn-secondary btn-sm" onclick="viewExamResult('${e.id}')" title="Sonuçları Gör">📊</button>
+          <button class="btn btn-secondary btn-sm" onclick="editExam('${e.id}')" title="Düzenle">✏️</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteExam('${e.id}')" title="Sil">🗑️</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function viewExamResult(id) {
+  const exam = exams.find(e => e.id === id);
+  if (!exam) return;
+  lastResult = exam.result;
+  renderResult(exam.result);
+  switchTab('tabResult');
+}
+
+// ==================== GELİŞİM GRAFİKLERİ ====================
+
+function renderCharts() {
+  if (typeof Chart === 'undefined') return;
+
+  const sorted = [...exams].sort((a,b) => new Date(a.date) - new Date(b.date));
+  const labels = sorted.map(e => e.name);
+  const isDark = settings.theme === 'dark';
+  const gridColor = isDark ? '#2a2a4a' : '#e0e0e0';
+  const textColor = isDark ? '#aaa' : '#555';
+  const type = settings.chartType || 'line';
+
+  destroyChart('chartScore');
+  const ctx1 = document.getElementById('chartScore');
+  if (ctx1 && sorted.length > 0) {
+    chartInstances['chartScore'] = new Chart(ctx1, {
+      type: type,
+      data: {
+        labels,
+        datasets: [{
+          label: 'Tahmini Puan',
+          data: sorted.map(e => e.result.score),
+          borderColor: settings.accent,
+          backgroundColor: settings.accent + '33',
+          fill: type === 'line',
+          tension: 0.3,
+          pointRadius: 5,
+          pointBackgroundColor: settings.accent
+        }]
+      },
+      options: chartOptions('Puan', gridColor, textColor)
+    });
+  }
+
+  destroyChart('chartNet');
+  const ctx2 = document.getElementById('chartNet');
+  if (ctx2 && sorted.length > 0) {
+    chartInstances['chartNet'] = new Chart(ctx2, {
+      type: type,
+      data: {
+        labels,
+        datasets: [{
+          label: 'Toplam Net',
+          data: sorted.map(e => e.result.totalNet),
+          borderColor: '#2a9d8f',
+          backgroundColor: '#2a9d8f33',
+          fill: type === 'line',
+          tension: 0.3,
+          pointRadius: 5,
+          pointBackgroundColor: '#2a9d8f'
+        }]
+      },
+      options: chartOptions('Net', gridColor, textColor)
+    });
+  }
+
+  destroyChart('chartSubjects');
+  const ctx3 = document.getElementById('chartSubjects');
+  if (ctx3 && sorted.length > 0) {
+    const colors = ['#4361ee','#e63946','#2a9d8f','#f77f00','#8338ec','#06d6a0'];
+    const datasets = DEFAULT_SUBJECTS.map((s, i) => ({
+      label: s.name.length > 12 ? s.name.substring(0,12) + '…' : s.name,
+      data: sorted.map(e => e.result.nets[s.id]?.net || 0),
+      borderColor: colors[i],
+      backgroundColor: colors[i] + '22',
+      tension: 0.3,
+      pointRadius: 3,
+      borderWidth: 2
+    }));
+    chartInstances['chartSubjects'] = new Chart(ctx3, {
+      type: 'line',
+      data: { labels, datasets },
+      options: {
+        ...chartOptions('Net', gridColor, textColor),
+        plugins: {
+          legend: { display: true, labels: { color: textColor, font: { size: 11 } } }
+        }
+      }
+    });
+  }
+
+  renderSmartTarget();
+}
+
+function chartOptions(label, gridColor, textColor) {
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false }
+    },
+    scales: {
+      x: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 10 }, maxRotation: 45 } },
+      y: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 10 } } }
+    }
+  };
+}
+
+function destroyChart(key) {
+  if (chartInstances[key]) {
+    chartInstances[key].destroy();
+    delete chartInstances[key];
+  }
+}
+
+// ==================== AKILLI HEDEF PUAN SİSTEMİ ====================
+
+function renderSmartTarget() {
+  const container = document.getElementById('smartTarget');
+  if (exams.length < 2) {
+    container.innerHTML = exams.length === 0 ? '' : `
+      <div class="target-box mb-16">
+        <div class="target-lbl">Önerilen Hedef Puan</div>
+        <div class="target-val">—</div>
+        <div class="target-desc">Hedef öneri için en az 2 deneme gereklidir.</div>
+      </div>`;
+    return;
+  }
+
+  const sorted = [...exams].sort((a,b) => new Date(a.date) - new Date(b.date));
+  const scores = sorted.map(e => e.result.score);
+
+  const avg = scores.reduce((a,b) => a+b, 0) / scores.length;
+  const last3 = scores.slice(-3);
+  const last3Avg = last3.reduce((a,b) => a+b, 0) / last3.length;
+  const best = Math.max(...scores);
+
+  const lastScore = scores[scores.length - 1];
+  const prevScore = scores[scores.length - 2];
+  const trend = lastScore - prevScore;
+
+  let target = (last3Avg * 0.4) + (best * 0.3) + (avg * 0.1) + ((lastScore + trend) * 0.2);
+
+  const ceiling = Math.min(MAX_SCORE, best * 1.05);
+  target = Math.min(target, ceiling);
+  target = Math.max(target, last3Avg);
+  target = parseFloat(target.toFixed(1));
+
+  const diff = (target - lastScore).toFixed(1);
+  const sign = diff >= 0 ? '+' : '';
+
+  container.innerHTML = `
+    <div class="target-box mb-16">
+      <div class="target-lbl">🎯 Önerilen Hedef Puan</div>
+      <div class="target-val">${target}</div>
+      <div class="target-desc">
+        Son puanınız: ${lastScore.toFixed(1)} | Fark: ${sign}${diff} puan<br>
+        <small>Son 3 ortalama: ${last3Avg.toFixed(1)} | Genel ortalama: ${avg.toFixed(1)} | En iyi: ${best.toFixed(1)}</small>
+      </div>
+    </div>`;
+}
+
+// ==================== DERS BAZLI ANALİZ ====================
+
+function renderAnalysis() {
+  const container = document.getElementById('analysisContent');
+
+  if (exams.length === 0) {
+    container.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">🔍</div>
+      <p>Analiz için en az 1 deneme kaydedin.</p>
+    </div>`;
+    return;
+  }
+
+  const subjectStats = {};
+  DEFAULT_SUBJECTS.forEach(s => {
+    const nets = exams.map(e => e.result.nets[s.id]?.net || 0);
+    const wrongs = exams.map(e => e.result.nets[s.id]?.wrong || 0);
+    const percentages = exams.map(e => parseFloat(e.result.nets[s.id]?.percentage || 0));
+    const qCount = settings.questionCounts[s.id] || s.defaultQ;
+
+    subjectStats[s.id] = {
+      name: s.name,
+      avgNet: (nets.reduce((a,b)=>a+b,0) / nets.length).toFixed(1),
+      avgPct: (percentages.reduce((a,b)=>a+b,0) / percentages.length).toFixed(1),
+      avgWrong: (wrongs.reduce((a,b)=>a+b,0) / wrongs.length).toFixed(1),
+      bestNet: Math.max(...nets).toFixed(1),
+      worstNet: Math.min(...nets).toFixed(1),
+      maxQ: qCount,
+      recentAvg: nets.length >= 3
+        ? (nets.slice(-3).reduce((a,b)=>a+b,0) / 3).toFixed(1)
+        : (nets.reduce((a,b)=>a+b,0) / nets.length).toFixed(1),
+      trend: nets.length >= 2 ? nets[nets.length-1] - nets[nets.length-2] : 0
+    };
+  });
+
+  const sorted = Object.entries(subjectStats).sort((a,b) => parseFloat(b[1].avgPct) - parseFloat(a[1].avgPct));
+  const strongest = sorted[0];
+  const weakest = sorted[sorted.length - 1];
+  const mostWrong = Object.entries(subjectStats).sort((a,b) => parseFloat(b[1].avgWrong) - parseFloat(a[1].avgWrong))[0];
+
+  let html = `
+    <div class="stats-grid mb-16">
+      <div class="stat-card success">
+        <div class="stat-value" style="font-size:1rem">${strongest[1].name}</div>
+        <div class="stat-label">En Güçlü Ders</div>
+      </div>
+      <div class="stat-card danger">
+        <div class="stat-value" style="font-size:1rem">${weakest[1].name}</div>
+        <div class="stat-label">Gelişime Açık Ders</div>
+      </div>
+      <div class="stat-card warn">
+        <div class="stat-value" style="font-size:1rem">${mostWrong[1].name}</div>
+        <div class="stat-label">En Çok Yanlış</div>
+      </div>
+    </div>
+
+    <div class="card mb-16">
+      <div class="card-title"><span class="icon">📚</span> Ders Bazlı Detaylı Analiz</div>
+      <div class="overflow-x">
+        <table class="net-table">
+          <thead>
+            <tr>
+              <th style="text-align:left">Ders</th>
+              <th>Ort. Net</th>
+              <th>Ort. %</th>
+              <th>Ort. Yanlış</th>
+              <th>En İyi</th>
+              <th>En Düşük</th>
+              <th>Son Trend</th>
+            </tr>
+          </thead>
+          <tbody>`;
+
+  DEFAULT_SUBJECTS.forEach(s => {
+    const st = subjectStats[s.id];
+    const trendIcon = st.trend > 0 ? '📈' : st.trend < 0 ? '📉' : '➡️';
+    const trendCls = st.trend > 0 ? 'trend-up' : st.trend < 0 ? 'trend-down' : 'trend-neutral';
+    html += `
+      <tr>
+        <td style="text-align:left;font-weight:600">${s.name}</td>
+        <td>${st.avgNet}</td>
+        <td>%${st.avgPct}</td>
+        <td style="color:var(--danger)">${st.avgWrong}</td>
+        <td style="color:var(--success)">${st.bestNet}</td>
+        <td style="color:var(--danger)">${st.worstNet}</td>
+        <td class="${trendCls}">${trendIcon} ${st.trend > 0 ? '+' : ''}${st.trend.toFixed(1)}</td>
+      </tr>`;
+  });
+
+  html += `</tbody></table></div></div>`;
+
+  html += `<div class="card"><div class="card-title"><span class="icon">💡</span> Değerlendirme</div><div class="analysis-grid">`;
+
+  html += `<div class="analysis-card" style="border-left-color:var(--success)">
+    <h4>💪 Güçlü Yön: ${strongest[1].name}</h4>
+    <p>Bu derste ortalama %${strongest[1].avgPct} başarı oranı ve ${strongest[1].avgNet} net ortalamasına sahipsiniz. En iyi performansınız ${strongest[1].bestNet} net.</p>
+  </div>`;
+
+  if (parseFloat(weakest[1].avgPct) < 50) {
+    html += `<div class="analysis-card" style="border-left-color:var(--danger)">
+      <h4>⚠️ Gelişim Alanı: ${weakest[1].name}</h4>
+      <p>Bu derste ortalama %${weakest[1].avgPct} başarı oranıyla en düşük performansı gösteriyorsunuz. Ortalama ${weakest[1].avgWrong} yanlışla net kaybı yaşanıyor.</p>
+    </div>`;
+  }
+
+  html += `<div class="analysis-card" style="border-left-color:var(--warn)">
+    <h4>❌ Yanlış Analizi: ${mostWrong[1].name}</h4>
+    <p>Deneme başına ortalama ${mostWrong[1].avgWrong} yanlış yapıyorsunuz. Her 3 yanlış 1 doğruyu götürdüğü için bu derste yaklaşık ${(parseFloat(mostWrong[1].avgWrong)/3).toFixed(1)} net kaybı oluşuyor.</p>
+  </div>`;
+
+  const avgScore = exams.reduce((a,b) => a + b.result.score, 0) / exams.length;
+  let perfLabel, perfColor;
+  if (avgScore >= 450) { perfLabel = 'Çok İyi'; perfColor = 'var(--success)'; }
+  else if (avgScore >= 380) { perfLabel = 'İyi'; perfColor = 'var(--accent)'; }
+  else if (avgScore >= 300) { perfLabel = 'Orta'; perfColor = '#e67e22'; }
+  else { perfLabel = 'Geliştirilmeli'; perfColor = 'var(--danger)'; }
+
+  html += `<div class="analysis-card" style="border-left-color:${perfColor}">
+    <h4>📊 Genel Durum: ${perfLabel}</h4>
+    <p>Ortalama tahmini puanınız ${avgScore.toFixed(1)}. ${exams.length} deneme analiz edildi. ${
+      avgScore >= 400 ? 'Performansınızı korumaya devam edin.' :
+      'Düzenli çalışma ve zayıf ders odaklı tekrar önerilir.'
+    }</p>
+  </div>`;
+
+  html += `</div></div>`;
+
+  container.innerHTML = html;
+}
+
+// ==================== TAB YÖNETİMİ ====================
+
+function switchTab(tabId) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+
+  const tabs = document.querySelectorAll('.tab');
+  const tabIds = ['tabEntry','tabResult','tabHistory','tabCharts','tabAnalysis'];
+  const idx = tabIds.indexOf(tabId);
+  if (idx !== -1 && tabs[idx]) tabs[idx].classList.add('active');
+
+  if (tabId === 'tabCharts') {
+    setTimeout(() => renderCharts(), 100);
+  }
+}
+
+// ==================== YARDIMCI FONKSİYONLAR ====================
+
+function clearForm() {
+  document.getElementById('examName').value = '';
+  document.getElementById('examNote').value = '';
+  setDefaultDate();
+  DEFAULT_SUBJECTS.forEach(s => {
+    document.getElementById('d_' + s.id).value = 0;
+    document.getElementById('y_' + s.id).value = 0;
+    const qCount = settings.questionCounts[s.id] || s.defaultQ;
+    document.getElementById('b_' + s.id).value = qCount;
+  });
+}
+
+function setDefaultDate() {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('examDate').value = today;
+}
+
+function formatDate(dateStr) {
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+function showAlert(containerId, msg, type) {
+  const el = document.getElementById(containerId);
+  if (!msg) { el.innerHTML = ''; return; }
+  el.innerHTML = `<div class="alert alert-${type}">${msg}</div>`;
+  if (type === 'success') {
+    setTimeout(() => { if (el) el.innerHTML = ''; }, 5000);
+  }
+}
+
+// ==================== VERİ DIŞA/İÇE AKTARMA ====================
+
+function exportData() {
+  const data = { exams, settings, exportDate: new Date().toISOString(), version: '1.0' };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `lgs-deneme-yedek-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (data.exams && Array.isArray(data.exams)) {
+        exams = data.exams.slice(0, MAX_EXAMS);
+        if (data.settings) {
+          settings = { ...settings, ...data.settings };
+        }
+        saveData();
+        localStorage.setItem('lgs_settings', JSON.stringify(settings));
+        applyTheme();
+        applyAccentColor();
+        buildSubjectTable();
+        buildSettingsPanel();
+        renderHistory();
+        renderCharts();
+        renderAnalysis();
+        alert('Veriler başarıyla içe aktarıldı!');
+      } else {
+        alert('Geçersiz dosya formatı.');
+      }
+    } catch(err) {
+      alert('Dosya okunamadı: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+function confirmClearAll() {
+  if (confirm('Tüm deneme verilerini silmek istediğinize emin misiniz?\nBu işlem geri alınamaz!')) {
+    exams = [];
+    saveData();
+    renderHistory();
+    renderCharts();
+    renderAnalysis();
+    document.getElementById('resultContent').innerHTML = `<div class="empty-state">
+      <div class="empty-icon">📊</div>
+      <p>Tüm veriler silindi.</p>
+    </div>`;
+    closeSettings();
+  }
+}
+
+// ==================== BAŞLANGIÇ AYARLARI ====================
+DEFAULT_SUBJECTS.forEach(s => {
+  const bEl = document.getElementById('b_' + s.id);
+  if (bEl) bEl.value = settings.questionCounts[s.id] || s.defaultQ;
+});
+</script>
+</body>
+</html>
